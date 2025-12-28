@@ -1,0 +1,2199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neural Database System - Secure Access</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Fira+Code:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --neon-cyan: #00f3ff;
+            --neon-purple: #b026ff;
+            --neon-pink: #ff006e;
+            --neon-blue: #0066ff;
+            --dark-bg: #0a0a0f;
+            --darker-bg: #050508;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--dark-bg);
+            color: #fff;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(0, 243, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(176, 38, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(255, 0, 110, 0.08) 0%, transparent 50%),
+                linear-gradient(135deg, #0a0a0f 0%, #050508 100%);
+            animation: bgShift 20s ease infinite;
+        }
+
+        @keyframes bgShift {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        /* Grid Pattern Overlay */
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -1;
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        /* Password Screen */
+        .password-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            backdrop-filter: blur(10px);
+        }
+
+        .password-container {
+            background: linear-gradient(135deg, 
+                rgba(10, 10, 15, 0.95) 0%, 
+                rgba(5, 5, 8, 0.98) 100%);
+            border: 2px solid var(--neon-cyan);
+            border-radius: 24px;
+            padding: 60px 50px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 
+                0 0 60px rgba(0, 243, 255, 0.3),
+                inset 0 0 60px rgba(0, 243, 255, 0.05);
+            animation: pulseGlow 3s ease-in-out infinite;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .password-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, 
+                transparent 30%, 
+                rgba(0, 243, 255, 0.1) 50%, 
+                transparent 70%);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { 
+                box-shadow: 0 0 60px rgba(0, 243, 255, 0.3),
+                           inset 0 0 60px rgba(0, 243, 255, 0.05);
+            }
+            50% { 
+                box-shadow: 0 0 80px rgba(0, 243, 255, 0.5),
+                           inset 0 0 60px rgba(0, 243, 255, 0.1);
+            }
+        }
+
+        .password-icon {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 30px;
+            background: linear-gradient(135deg, var(--neon-cyan) 0%, var(--neon-purple) 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 40px rgba(0, 243, 255, 0.5);
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+
+        .password-icon svg {
+            width: 50px;
+            height: 50px;
+            fill: white;
+        }
+
+        .password-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 2.5rem;
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--neon-cyan) 0%, var(--neon-purple) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(0, 243, 255, 0.5);
+            letter-spacing: 2px;
+        }
+
+        .password-subtitle {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 40px;
+            font-size: 1rem;
+            letter-spacing: 1px;
+        }
+
+        .password-input-group {
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .password-input {
+            width: 100%;
+            padding: 20px 24px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid var(--neon-cyan);
+            border-radius: 12px;
+            color: var(--neon-cyan);
+            font-family: 'Fira Code', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 8px;
+            text-align: center;
+            outline: none;
+            transition: all 0.3s;
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.2);
+        }
+
+        .password-input:focus {
+            border-color: var(--neon-purple);
+            box-shadow: 0 0 30px rgba(176, 38, 255, 0.4);
+            background: rgba(0, 0, 0, 0.6);
+        }
+
+        .password-input::placeholder {
+            color: rgba(0, 243, 255, 0.3);
+            letter-spacing: 2px;
+        }
+
+        .password-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, var(--neon-cyan) 0%, var(--neon-purple) 100%);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-family: 'Orbitron', monospace;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 0 30px rgba(0, 243, 255, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .password-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .password-btn:hover::before {
+            left: 100%;
+        }
+
+        .password-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 40px rgba(0, 243, 255, 0.6);
+        }
+
+        .password-btn:active {
+            transform: translateY(0);
+        }
+
+        .error-message {
+            color: var(--neon-pink);
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-family: 'Fira Code', monospace;
+        }
+
+        .error-message.show {
+            opacity: 1;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        /* Database Interface */
+        .database-container {
+            display: none;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .database-container.active {
+            display: block;
+        }
+
+        .db-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 30px 40px;
+            background: linear-gradient(135deg, 
+                rgba(10, 10, 15, 0.8) 0%, 
+                rgba(5, 5, 8, 0.9) 100%);
+            backdrop-filter: blur(20px);
+            border-bottom: 2px solid var(--neon-cyan);
+            margin-bottom: 30px;
+            box-shadow: 0 4px 30px rgba(0, 243, 255, 0.2);
+        }
+
+        .db-title-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .db-logo {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, var(--neon-cyan) 0%, var(--neon-purple) 100%);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 30px rgba(0, 243, 255, 0.5);
+            animation: float 4s ease-in-out infinite;
+        }
+
+        .db-logo svg {
+            width: 40px;
+            height: 40px;
+            fill: white;
+        }
+
+        .db-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 2rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--neon-cyan) 0%, var(--neon-purple) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 2px;
+        }
+
+        .db-subtitle {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 5px;
+            font-family: 'Fira Code', monospace;
+        }
+
+        .db-status {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 24px;
+            background: rgba(0, 243, 255, 0.1);
+            border: 1px solid var(--neon-cyan);
+            border-radius: 12px;
+            font-family: 'Fira Code', monospace;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            background: var(--neon-cyan);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--neon-cyan);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.2); }
+        }
+
+        .sync-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(0, 255, 100, 0.1);
+            border: 1px solid rgba(0, 255, 100, 0.3);
+            border-radius: 8px;
+            font-size: 0.85rem;
+            color: #00ff64;
+            font-family: 'Fira Code', monospace;
+        }
+
+        .sync-indicator.syncing {
+            border-color: var(--neon-cyan);
+            color: var(--neon-cyan);
+        }
+
+        .sync-dot {
+            width: 8px;
+            height: 8px;
+            background: currentColor;
+            border-radius: 50%;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .db-content {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.05) 0%, 
+                rgba(255, 255, 255, 0.02) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 30px;
+            transition: all 0.4s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple));
+            transform: scaleX(0);
+            transition: transform 0.4s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--neon-cyan);
+            box-shadow: 0 10px 40px rgba(0, 243, 255, 0.2);
+        }
+
+        .stat-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-family: 'Fira Code', monospace;
+        }
+
+        .stat-value {
+            font-size: 3.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--neon-cyan) 0%, var(--neon-purple) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-family: 'Orbitron', monospace;
+            line-height: 1;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .chart-card {
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.05) 0%, 
+                rgba(255, 255, 255, 0.02) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 30px;
+            position: relative;
+        }
+
+        .chart-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple));
+        }
+
+        .chart-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.3rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            color: var(--neon-cyan);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 20px;
+        }
+
+        .data-section {
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.05) 0%, 
+                rgba(255, 255, 255, 0.02) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: var(--neon-cyan);
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .data-table thead {
+            background: rgba(0, 243, 255, 0.1);
+        }
+
+        .data-table th {
+            padding: 18px;
+            text-align: left;
+            font-family: 'Fira Code', monospace;
+            font-weight: 700;
+            color: var(--neon-cyan);
+            border-bottom: 2px solid var(--neon-cyan);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.85rem;
+        }
+
+        .data-table td {
+            padding: 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .data-table tbody tr {
+            transition: all 0.3s;
+        }
+
+        .data-table tbody tr:hover {
+            background: rgba(0, 243, 255, 0.05);
+            transform: translateX(5px);
+        }
+
+        .data-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            background: rgba(0, 243, 255, 0.2);
+            border: 1px solid var(--neon-cyan);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-family: 'Fira Code', monospace;
+            color: var(--neon-cyan);
+        }
+
+        .data-badge.success {
+            background: rgba(0, 255, 100, 0.2);
+            border-color: #00ff64;
+            color: #00ff64;
+        }
+
+        .data-badge.warning {
+            background: rgba(255, 200, 0, 0.2);
+            border-color: #ffc800;
+            color: #ffc800;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 16px 24px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid var(--neon-cyan);
+            border-radius: 12px;
+            color: var(--neon-cyan);
+            font-family: 'Fira Code', monospace;
+            font-size: 1rem;
+            margin-bottom: 24px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .search-box:focus {
+            border-color: var(--neon-purple);
+            box-shadow: 0 0 20px rgba(176, 38, 255, 0.3);
+        }
+
+        .search-box::placeholder {
+            color: rgba(0, 243, 255, 0.4);
+        }
+
+        .update-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            background: rgba(0, 255, 100, 0.2);
+            border: 1px solid #00ff64;
+            border-radius: 12px;
+            color: #00ff64;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .update-indicator.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .admin-btn {
+            padding: 10px 20px;
+            background: rgba(0, 243, 255, 0.1);
+            border: 1px solid var(--neon-cyan);
+            border-radius: 8px;
+            color: var(--neon-cyan);
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .admin-btn:hover {
+            background: rgba(0, 243, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 243, 255, 0.3);
+        }
+
+        .admin-btn.danger {
+            border-color: var(--neon-pink);
+            color: var(--neon-pink);
+            background: rgba(255, 0, 110, 0.1);
+        }
+
+        .admin-btn.danger:hover {
+            background: rgba(255, 0, 110, 0.2);
+            box-shadow: 0 4px 12px rgba(255, 0, 110, 0.3);
+        }
+
+        .admin-card {
+            background: rgba(0, 243, 255, 0.05);
+            border: 1px solid rgba(0, 243, 255, 0.2);
+            border-radius: 16px;
+            padding: 24px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .admin-card:hover {
+            background: rgba(0, 243, 255, 0.1);
+            border-color: var(--neon-cyan);
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0, 243, 255, 0.2);
+        }
+
+        .admin-card.danger {
+            border-color: rgba(255, 0, 110, 0.2);
+            background: rgba(255, 0, 110, 0.05);
+        }
+
+        .admin-card.danger:hover {
+            background: rgba(255, 0, 110, 0.1);
+            border-color: var(--neon-pink);
+            box-shadow: 0 8px 24px rgba(255, 0, 110, 0.2);
+        }
+
+        .admin-icon {
+            font-size: 3rem;
+            margin-bottom: 12px;
+        }
+
+        .admin-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--neon-cyan);
+            margin-bottom: 8px;
+        }
+
+        .admin-desc {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.6);
+            font-family: 'Fira Code', monospace;
+        }
+
+        .admin-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+
+        .admin-modal-content {
+            background: linear-gradient(135deg, 
+                rgba(10, 10, 15, 0.98) 0%, 
+                rgba(5, 5, 8, 0.98) 100%);
+            border: 2px solid var(--neon-cyan);
+            border-radius: 20px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 0 60px rgba(0, 243, 255, 0.3);
+        }
+
+        .admin-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px;
+            border-bottom: 1px solid rgba(0, 243, 255, 0.2);
+        }
+
+        .admin-modal-header h3 {
+            font-family: 'Orbitron', monospace;
+            color: var(--neon-cyan);
+            font-size: 1.5rem;
+            }
+
+        .admin-modal-close {
+            background: none;
+            border: none;
+            color: var(--neon-cyan);
+            font-size: 2rem;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .admin-modal-close:hover {
+            background: rgba(0, 243, 255, 0.1);
+        }
+
+        .admin-modal-body {
+            padding: 24px;
+        }
+
+        .action-btn {
+            padding: 12px 24px;
+            margin: 8px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Fira Code', monospace;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .action-btn.primary {
+            background: var(--neon-cyan);
+            color: white;
+        }
+
+        .action-btn.danger {
+            background: var(--neon-pink);
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 243, 255, 0.4);
+        }
+
+        /* Hero Section - Landing Page Style */
+        .hero-section {
+            background: linear-gradient(135deg, 
+                rgba(0, 243, 255, 0.1) 0%, 
+                rgba(176, 38, 255, 0.1) 100%);
+            border: 2px solid rgba(0, 243, 255, 0.3);
+            border-radius: 24px;
+            padding: 60px 40px;
+            margin-bottom: 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(0, 243, 255, 0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 3.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--neon-cyan) 0%, var(--neon-purple) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            letter-spacing: 3px;
+            text-shadow: 0 0 40px rgba(0, 243, 255, 0.5);
+        }
+
+        .hero-subtitle {
+            font-size: 1.3rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 40px;
+            font-weight: 500;
+        }
+
+        .hero-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .hero-stat {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(0, 243, 255, 0.3);
+            border-radius: 16px;
+            padding: 30px;
+            transition: all 0.3s;
+        }
+
+        .hero-stat:hover {
+            transform: translateY(-5px);
+            border-color: var(--neon-cyan);
+            box-shadow: 0 8px 24px rgba(0, 243, 255, 0.3);
+        }
+
+        .hero-stat-value {
+            font-family: 'Orbitron', monospace;
+            font-size: 3rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--neon-cyan) 0%, var(--neon-purple) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .hero-stat-label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-family: 'Fira Code', monospace;
+        }
+
+        .response-type-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            font-family: 'Fira Code', monospace;
+            text-transform: uppercase;
+        }
+
+        .response-type-badge.DETAILED {
+            background: rgba(0, 255, 100, 0.2);
+            border: 1px solid #00ff64;
+            color: #00ff64;
+        }
+
+        .response-type-badge.MODERATE {
+            background: rgba(255, 200, 0, 0.2);
+            border: 1px solid #ffc800;
+            color: #ffc800;
+        }
+
+        .response-type-badge.BRIEF {
+            background: rgba(0, 243, 255, 0.2);
+            border: 1px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+        }
+
+        .response-type-badge.PENDING {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .question-type-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            font-family: 'Fira Code', monospace;
+            background: rgba(176, 38, 255, 0.2);
+            border: 1px solid var(--neon-purple);
+            color: var(--neon-purple);
+        }
+
+        @media (max-width: 768px) {
+            .password-container {
+                padding: 40px 30px;
+            }
+
+            .password-title {
+                font-size: 2rem;
+            }
+
+            .db-header {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .data-table {
+                font-size: 0.85rem;
+            }
+
+            .data-table th,
+            .data-table td {
+                padding: 12px 8px;
+            }
+
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1rem;
+            }
+
+            .hero-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+    <div class="grid-overlay"></div>
+
+    <!-- Password Screen -->
+    <div class="password-screen" id="passwordScreen">
+        <div class="password-container">
+            <div class="password-icon">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 1C8.1 1 5 4.1 5 8v3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-8c0-1.1-.9-2-2-2V8c0-3.9-3.1-7-7-7zm0 2c2.8 0 5 2.2 5 5v3H7V8c0-2.8 2.2-5 5-5zm-7 9h14v8H5v-8z"/>
+                </svg>
+            </div>
+            <h1 class="password-title">NEURAL DATABASE</h1>
+            <p class="password-subtitle">SECURE ACCESS REQUIRED</p>
+            <div class="password-input-group">
+                <input 
+                    type="password" 
+                    class="password-input" 
+                    id="passwordInput" 
+                    placeholder="ENTER ACCESS CODE"
+                    maxlength="4"
+                    autocomplete="off"
+                >
+            </div>
+            <button class="password-btn" onclick="checkPassword()">AUTHENTICATE</button>
+            <div class="error-message" id="errorMessage">INVALID ACCESS CODE</div>
+        </div>
+    </div>
+
+    <!-- Database Interface -->
+    <div class="database-container" id="databaseContainer">
+        <header class="db-header">
+            <div class="db-title-section">
+                <div class="db-logo">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="db-title">NEURAL DATABASE SYSTEM</div>
+                    <div class="db-subtitle">v2.4.7 | Quantum Encrypted | Real-time Sync</div>
+                </div>
+            </div>
+            <div style="display: flex; gap: 16px; align-items: center;">
+                <div class="sync-indicator" id="syncIndicator">
+                    <div class="sync-dot"></div>
+                    <span id="syncText">SYNCED</span>
+                </div>
+                <div class="db-status">
+                    <div class="status-dot"></div>
+                    <span>SYSTEM ONLINE</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="db-content">
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Records</div>
+                    <div class="stat-value" id="statTotal">1,247</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Active Sessions</div>
+                    <div class="stat-value" id="statSessions">23</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Data Integrity</div>
+                    <div class="stat-value" id="statIntegrity">99.8%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Query Speed</div>
+                    <div class="stat-value" id="statSpeed">0.03s</div>
+                </div>
+            </div>
+
+            <!-- Hero Section - Landing Page Style -->
+            <div class="hero-section">
+                <div class="hero-content">
+                    <h1 class="hero-title">AI CONVERSATION ANALYTICS</h1>
+                    <p class="hero-subtitle">Real-time insights into AI interactions and responses</p>
+                    <div class="hero-stats">
+                        <div class="hero-stat">
+                            <div class="hero-stat-value" id="heroTotalChats">0</div>
+                            <div class="hero-stat-label">Total Conversations</div>
+                        </div>
+                        <div class="hero-stat">
+                            <div class="hero-stat-value" id="heroActiveUsers">0</div>
+                            <div class="hero-stat-label">Active Users</div>
+                        </div>
+                        <div class="hero-stat">
+                            <div class="hero-stat-value" id="heroAvgResponse">0ms</div>
+                            <div class="hero-stat-label">Avg Response Time</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section - Enhanced -->
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M3 3v18h18"/>
+                            <path d="M7 12l4-4 4 4 6-6"/>
+                        </svg>
+                        Conversation Growth Trend
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="growthChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <circle cx="12" cy="12" r="10"/>
+                        </svg>
+                        Question Type Distribution
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="questionTypeChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                        </svg>
+                        Hourly Activity Pattern
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="activityChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        </svg>
+                        Response Type Analysis
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="responseTypeChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
+                        </svg>
+                        Response Time Analysis
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="responseTimeChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        </svg>
+                        User Activity Heatmap
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="userActivityChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Knowledge Base Section -->
+            <div class="data-section">
+                <h2 class="section-title">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                        </svg>
+                    KNOWLEDGE BASE
+                </h2>
+                <input 
+                    type="text" 
+                    class="search-box" 
+                    id="searchBox" 
+                    placeholder="SEARCH DATABASE..."
+                    onkeyup="filterTable()"
+                >
+                <table class="data-table" id="knowledgeTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Category</th>
+                            <th>Topic</th>
+                            <th>Description</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="knowledgeTableBody">
+                        <!-- Data will be loaded dynamically -->
+                    </tbody>
+                </table>
+                    </div>
+
+            <!-- AI Conversation Analysis Section (Secret - Don't reveal this is a database) -->
+            <div class="data-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                    <h2 class="section-title" style="margin: 0;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        </svg>
+                        AI CONVERSATION ANALYSIS
+                    </h2>
+                    <div style="display: flex; gap: 12px;">
+                        <button onclick="exportChatData()" class="admin-btn" title="Export Data">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z"/>
+                            </svg>
+                            EXPORT
+                        </button>
+                        <button onclick="clearChatData()" class="admin-btn danger" title="Clear All Data">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                            </svg>
+                            CLEAR
+                        </button>
+                    </div>
+                </div>
+                <div style="margin-bottom: 20px; display: flex; gap: 12px; flex-wrap: wrap;">
+                    <input 
+                        type="text" 
+                        class="search-box" 
+                        id="chatSearchBox" 
+                        placeholder="SEARCH CONVERSATIONS..."
+                        style="flex: 1; min-width: 200px;"
+                        onkeyup="filterChatTable()"
+                    >
+                    <select id="filterType" class="search-box" style="width: 180px;" onchange="filterChatTable()">
+                        <option value="">ALL TYPES</option>
+                        <option value="user">QUESTIONS</option>
+                        <option value="assistant">ANSWERS</option>
+                    </select>
+                </div>
+                <table class="data-table" id="chatAnalysisTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>User</th>
+                            <th>Question Asked</th>
+                            <th>AI Response</th>
+                            <th>Question Type</th>
+                            <th>Response Type</th>
+                            <th>Response Time</th>
+                            <th>Timestamp</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="chatAnalysisTableBody">
+                        <!-- Chat analysis will be loaded dynamically -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- System Logs Section -->
+            <div class="data-section">
+                <h2 class="section-title">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                    </svg>
+                    SYSTEM LOGS
+                </h2>
+                <table class="data-table" id="logsTable">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Event</th>
+                            <th>Status</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logsTableBody">
+                        <!-- Logs will be loaded dynamically -->
+                    </tbody>
+                </table>
+                </div>
+
+            <!-- Admin Panel Section -->
+            <div class="data-section">
+                <h2 class="section-title">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+                    </svg>
+                    ADMIN PANEL
+                </h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                    <div class="admin-card" onclick="refreshAllData()">
+                        <div class="admin-icon">🔄</div>
+                        <div class="admin-title">Refresh Data</div>
+                        <div class="admin-desc">Reload all data from storage</div>
+                </div>
+                    <div class="admin-card" onclick="exportAllData()">
+                        <div class="admin-icon">📥</div>
+                        <div class="admin-title">Export All</div>
+                        <div class="admin-desc">Download complete database</div>
+            </div>
+                    <div class="admin-card danger" onclick="showResetConfirm()">
+                        <div class="admin-icon">🗑️</div>
+                        <div class="admin-title">Reset Database</div>
+                        <div class="admin-desc">Clear all stored data</div>
+                    </div>
+                    <div class="admin-card" onclick="showStats()">
+                        <div class="admin-icon">📊</div>
+                        <div class="admin-title">View Statistics</div>
+                        <div class="admin-desc">Detailed analytics report</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Modal -->
+    <div id="adminModal" class="admin-modal" style="display: none;">
+        <div class="admin-modal-content">
+            <div class="admin-modal-header">
+                <h3 id="modalTitle">Admin Action</h3>
+                <button onclick="closeAdminModal()" class="admin-modal-close">×</button>
+            </div>
+            <div class="admin-modal-body" id="modalBody">
+                <!-- Modal content -->
+            </div>
+        </div>
+    </div>
+
+    <div class="update-indicator" id="updateIndicator">Data Synced Successfully</div>
+
+    <script>
+        const SECRET_PASSWORD = '2325';
+        
+        // Database State
+        let databaseState = {
+            knowledgeBase: [],
+            systemLogs: [],
+            chatInteractions: [],
+            stats: {
+                total: 1247,
+                sessions: 23,
+                integrity: 99.8,
+                speed: 0.03
+            },
+            charts: {
+                growth: [],
+                categories: {},
+                activity: []
+            }
+        };
+
+        // Initialize Charts
+        let growthChart, questionTypeChart, activityChart, responseTypeChart, responseTimeChart, userActivityChart;
+
+        // Initialize database
+        function initDatabase() {
+            loadFromStorage();
+            loadChatInteractions();
+            initializeCharts();
+            renderKnowledgeBase();
+            renderSystemLogs();
+            renderChatAnalysis();
+            updateStats();
+            updateHeroStats();
+            startSync();
+            
+            // Set up callback for chat app updates
+            window.databaseUpdateCallback = () => {
+                loadChatInteractions();
+                renderChatAnalysis();
+                updateStats();
+                updateCharts();
+                updateHeroStats();
+                syncData();
+            };
+        }
+
+        // Load data from localStorage
+        function loadFromStorage() {
+            const saved = localStorage.getItem('neuralDatabase');
+            if (saved) {
+                databaseState = JSON.parse(saved);
+            } else {
+                // Initialize with default data
+                initializeDefaultData();
+            }
+        }
+
+        // Initialize default data
+        function initializeDefaultData() {
+            databaseState.knowledgeBase = [
+                { id: 'KB-001', category: 'Technology', topic: 'Quantum Computing', description: 'Quantum computers use quantum bits (qubits) that can exist in superposition, allowing parallel processing of information.', status: 'ACTIVE' },
+                { id: 'KB-002', category: 'Science', topic: 'Neural Networks', description: 'Artificial neural networks are computing systems inspired by biological neural networks that constitute animal brains.', status: 'ACTIVE' },
+                { id: 'KB-003', category: 'Technology', topic: 'Blockchain Technology', description: 'Distributed ledger technology that maintains a continuously growing list of records secured using cryptography.', status: 'ACTIVE' },
+                { id: 'KB-004', category: 'Science', topic: 'Machine Learning', description: 'Subset of AI that enables systems to learn and improve from experience without being explicitly programmed.', status: 'ACTIVE' },
+                { id: 'KB-005', category: 'Technology', topic: 'Cloud Computing', description: 'Delivery of computing services including servers, storage, databases, networking, and software over the internet.', status: 'ACTIVE' },
+                { id: 'KB-006', category: 'Science', topic: 'CRISPR Gene Editing', description: 'Revolutionary gene-editing technology that allows precise modification of DNA sequences in living cells.', status: 'ACTIVE' },
+                { id: 'KB-007', category: 'Technology', topic: '5G Networks', description: 'Fifth generation of cellular network technology offering faster speeds and lower latency than 4G.', status: 'ACTIVE' },
+                { id: 'KB-008', category: 'Science', topic: 'Dark Matter', description: 'Hypothetical form of matter that does not emit, absorb, or reflect light, making it invisible to current detection methods.', status: 'ACTIVE' },
+                { id: 'KB-009', category: 'Technology', topic: 'Internet of Things', description: 'Network of physical objects embedded with sensors and software to connect and exchange data with other devices.', status: 'ACTIVE' },
+                { id: 'KB-010', category: 'Science', topic: 'Black Holes', description: 'Region of spacetime where gravity is so strong that nothing, not even light, can escape once it crosses the event horizon.', status: 'ACTIVE' },
+                { id: 'KB-011', category: 'Technology', topic: 'Augmented Reality', description: 'Technology that overlays digital information and virtual objects onto the real world through devices like smartphones or AR glasses.', status: 'ACTIVE' },
+                { id: 'KB-012', category: 'Science', topic: 'Climate Change', description: 'Long-term shifts in global temperatures and weather patterns, primarily caused by human activities since the mid-20th century.', status: 'MONITORED' },
+                { id: 'KB-013', category: 'Technology', topic: 'Cybersecurity', description: 'Practice of protecting systems, networks, and programs from digital attacks, theft, and damage.', status: 'ACTIVE' },
+                { id: 'KB-014', category: 'Science', topic: 'DNA Sequencing', description: 'Process of determining the precise order of nucleotides within a DNA molecule, revolutionizing genetics and medicine.', status: 'ACTIVE' },
+                { id: 'KB-015', category: 'Technology', topic: 'Edge Computing', description: 'Distributed computing paradigm that brings computation and data storage closer to the location where it\'s needed.', status: 'ACTIVE' }
+            ];
+
+            databaseState.systemLogs = [
+                { timestamp: new Date(Date.now() - 300000).toLocaleString(), event: 'Database Backup', status: 'SUCCESS', details: 'Full backup completed - 2.4TB' },
+                { timestamp: new Date(Date.now() - 600000).toLocaleString(), event: 'Security Scan', status: 'CLEAN', details: 'No threats detected' },
+                { timestamp: new Date(Date.now() - 900000).toLocaleString(), event: 'Query Optimization', status: 'OPTIMIZED', details: 'Query speed improved by 23%' },
+                { timestamp: new Date(Date.now() - 1200000).toLocaleString(), event: 'User Authentication', status: 'AUTHORIZED', details: 'Admin access granted' },
+                { timestamp: new Date(Date.now() - 1500000).toLocaleString(), event: 'Data Sync', status: 'SYNCED', details: 'All nodes synchronized' },
+                { timestamp: new Date(Date.now() - 1800000).toLocaleString(), event: 'Cache Refresh', status: 'REFRESHED', details: 'Cache cleared and rebuilt' }
+            ];
+
+            // Initialize chart data
+            const now = Date.now();
+            databaseState.charts.growth = Array.from({ length: 12 }, (_, i) => ({
+                month: new Date(now - (11 - i) * 30 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { month: 'short' }),
+                value: 800 + Math.random() * 500
+            }));
+
+            databaseState.charts.categories = databaseState.knowledgeBase.reduce((acc, item) => {
+                acc[item.category] = (acc[item.category] || 0) + 1;
+                return acc;
+            }, {});
+
+            databaseState.charts.activity = Array.from({ length: 24 }, (_, i) => ({
+                hour: i,
+                value: Math.floor(Math.random() * 50) + 10
+            }));
+
+            saveToStorage();
+        }
+
+        // Save to localStorage
+        function saveToStorage() {
+            localStorage.setItem('neuralDatabase', JSON.stringify(databaseState));
+        }
+
+        // Initialize Charts
+        function initializeCharts() {
+            const chartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#00f3ff',
+                            font: { family: 'Fira Code', size: 12 }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: { color: '#00f3ff' },
+                        grid: { color: 'rgba(0, 243, 255, 0.1)' }
+                    },
+                    y: {
+                        ticks: { color: '#00f3ff' },
+                        grid: { color: 'rgba(0, 243, 255, 0.1)' }
+                    }
+                }
+            };
+
+            // Growth Chart
+            const growthCtx = document.getElementById('growthChart').getContext('2d');
+            growthChart = new Chart(growthCtx, {
+                type: 'line',
+                data: {
+                    labels: databaseState.charts.growth.map(d => d.month),
+                    datasets: [{
+                        label: 'Conversations',
+                        data: databaseState.charts.growth.map(d => d.value),
+                        borderColor: '#00f3ff',
+                        backgroundColor: 'rgba(0, 243, 255, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: chartOptions
+            });
+
+            // Question Type Chart
+            const questionTypeCtx = document.getElementById('questionTypeChart').getContext('2d');
+            const questionTypes = databaseState.chatInteractions.reduce((acc, item) => {
+                const type = item.questionType || 'GENERAL';
+                acc[type] = (acc[type] || 0) + 1;
+                return acc;
+            }, {});
+            
+            questionTypeChart = new Chart(questionTypeCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(questionTypes),
+                    datasets: [{
+                        data: Object.values(questionTypes),
+                        backgroundColor: [
+                            'rgba(0, 243, 255, 0.8)',
+                            'rgba(176, 38, 255, 0.8)',
+                            'rgba(255, 0, 110, 0.8)',
+                            'rgba(0, 255, 100, 0.8)',
+                            'rgba(255, 200, 0, 0.8)',
+                            'rgba(0, 102, 255, 0.8)'
+                        ],
+                        borderColor: [
+                            '#00f3ff',
+                            '#b026ff',
+                            '#ff006e',
+                            '#00ff64',
+                            '#ffc800',
+                            '#0066ff'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    ...chartOptions,
+                    scales: undefined
+                }
+            });
+
+            // Activity Chart
+            const activityCtx = document.getElementById('activityChart').getContext('2d');
+            activityChart = new Chart(activityCtx, {
+                type: 'bar',
+                data: {
+                    labels: databaseState.charts.activity.map(d => d.hour + ':00'),
+                    datasets: [{
+                        label: 'Activity',
+                        data: databaseState.charts.activity.map(d => d.value),
+                        backgroundColor: 'rgba(0, 243, 255, 0.6)',
+                        borderColor: '#00f3ff',
+                        borderWidth: 1
+                    }]
+                },
+                options: chartOptions
+            });
+
+            // Response Type Chart
+            const responseTypeCtx = document.getElementById('responseTypeChart').getContext('2d');
+            const responseTypes = databaseState.chatInteractions.reduce((acc, item) => {
+                const type = item.responseType || 'PENDING';
+                acc[type] = (acc[type] || 0) + 1;
+                return acc;
+            }, {});
+            
+            responseTypeChart = new Chart(responseTypeCtx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(responseTypes),
+                    datasets: [{
+                        data: Object.values(responseTypes),
+                        backgroundColor: [
+                            'rgba(0, 255, 100, 0.8)',
+                            'rgba(255, 200, 0, 0.8)',
+                            'rgba(0, 243, 255, 0.8)',
+                            'rgba(255, 255, 255, 0.3)'
+                        ],
+                        borderColor: [
+                            '#00ff64',
+                            '#ffc800',
+                            '#00f3ff',
+                            'rgba(255, 255, 255, 0.5)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    ...chartOptions,
+                    scales: undefined
+                }
+            });
+
+            // Response Time Chart
+            const responseTimeCtx = document.getElementById('responseTimeChart').getContext('2d');
+            const responseTimes = databaseState.chatInteractions
+                .filter(i => i.responseTime)
+                .map(i => i.responseTime);
+            
+            responseTimeChart = new Chart(responseTimeCtx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({ length: Math.min(responseTimes.length, 20) }, (_, i) => i + 1),
+                    datasets: [{
+                        label: 'Response Time (ms)',
+                        data: responseTimes.slice(-20),
+                        borderColor: '#b026ff',
+                        backgroundColor: 'rgba(176, 38, 255, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: chartOptions
+            });
+
+            // User Activity Chart
+            const userActivityCtx = document.getElementById('userActivityChart').getContext('2d');
+            const userActivity = databaseState.chatInteractions.reduce((acc, item) => {
+                const user = item.user || 'anonymous';
+                acc[user] = (acc[user] || 0) + 1;
+                return acc;
+            }, {});
+            
+            const sortedUsers = Object.entries(userActivity)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10);
+            
+            userActivityChart = new Chart(userActivityCtx, {
+                type: 'bar',
+                data: {
+                    labels: sortedUsers.map(u => u[0]),
+                    datasets: [{
+                        label: 'Interactions',
+                        data: sortedUsers.map(u => u[1]),
+                        backgroundColor: 'rgba(255, 0, 110, 0.6)',
+                        borderColor: '#ff006e',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    ...chartOptions,
+                    indexAxis: 'y'
+                }
+            });
+        }
+
+        // Render Knowledge Base
+        function renderKnowledgeBase() {
+            const tbody = document.getElementById('knowledgeTableBody');
+            tbody.innerHTML = databaseState.knowledgeBase.map(item => `
+                <tr>
+                    <td>${item.id}</td>
+                    <td><span class="data-badge">${item.category}</span></td>
+                    <td>${item.topic}</td>
+                    <td>${item.description}</td>
+                    <td><span class="data-badge ${item.status === 'ACTIVE' ? 'success' : 'warning'}">${item.status}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        // Load Chat Interactions from localStorage
+        function loadChatInteractions() {
+            try {
+                const interactions = JSON.parse(localStorage.getItem('chatInteractions') || '[]');
+                databaseState.chatInteractions = interactions;
+            } catch (err) {
+                console.log('Error loading chat interactions');
+                databaseState.chatInteractions = [];
+            }
+        }
+
+        // Render Chat Analysis (Secret - Don't reveal it's a database)
+        function renderChatAnalysis() {
+            const tbody = document.getElementById('chatAnalysisTableBody');
+            const interactions = databaseState.chatInteractions.slice().reverse(); // Show newest first
+            
+            if (interactions.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 40px; color: rgba(255,255,255,0.5);">No conversation data analyzed yet</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = interactions.map(interaction => {
+                const date = new Date(interaction.timestamp);
+                const timeStr = date.toLocaleString();
+                const question = interaction.question || 'N/A';
+                const answer = interaction.answer ? (interaction.answer.length > 80 ? interaction.answer.substring(0, 80) + '...' : interaction.answer) : 'Pending...';
+                const responseType = interaction.responseType || 'PENDING';
+                const questionType = interaction.questionType || 'GENERAL';
+                const responseTime = interaction.responseTime ? interaction.responseTime + 'ms' : 'N/A';
+                
+                return `
+                    <tr>
+                        <td>${interaction.id}</td>
+                        <td>${interaction.user || 'anonymous'}</td>
+                        <td>${escapeHtml(question)}</td>
+                        <td>${escapeHtml(answer)}</td>
+                        <td><span class="question-type-badge">${questionType}</span></td>
+                        <td><span class="response-type-badge ${responseType}">${responseType}</span></td>
+                        <td>${responseTime}</td>
+                        <td>${timeStr}</td>
+                        <td>
+                            <button onclick="deleteInteraction('${interaction.id}')" class="admin-btn danger" style="padding: 4px 12px; font-size: 0.75rem;" title="Delete">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                                </svg>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Filter Chat Table
+        function filterChatTable() {
+            const searchInput = document.getElementById('chatSearchBox');
+            const typeFilter = document.getElementById('filterType').value;
+            const filter = searchInput.value.toUpperCase();
+            const table = document.getElementById('chatAnalysisTable');
+            const tr = table.getElementsByTagName('tr');
+            
+            for (let i = 1; i < tr.length; i++) {
+                const td = tr[i].getElementsByTagName('td');
+                let found = true;
+                
+                // Text search
+                if (filter) {
+                    found = false;
+                    for (let j = 0; j < td.length; j++) {
+                        if (td[j]) {
+                            const txtValue = td[j].textContent || td[j].innerText;
+                            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                                found = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                // Type filter
+                if (found && typeFilter) {
+                    const typeCell = td[4]; // Question Type column
+                    if (typeCell) {
+                        const typeText = typeCell.textContent || typeCell.innerText;
+                        if (!typeText.toUpperCase().includes(typeFilter.toUpperCase())) {
+                            found = false;
+                        }
+                    }
+                }
+                
+                tr[i].style.display = found ? '' : 'none';
+            }
+        }
+
+        // Delete Interaction
+        function deleteInteraction(id) {
+            if (confirm('Delete this conversation analysis?')) {
+                databaseState.chatInteractions = databaseState.chatInteractions.filter(i => i.id !== id);
+                const interactions = JSON.parse(localStorage.getItem('chatInteractions') || '[]');
+                const updated = interactions.filter(i => i.id !== id);
+                localStorage.setItem('chatInteractions', JSON.stringify(updated));
+                renderChatAnalysis();
+                updateStats();
+                showUpdateIndicator('Conversation analysis deleted');
+            }
+        }
+
+        // Export Chat Data
+        function exportChatData() {
+            const data = JSON.stringify(databaseState.chatInteractions, null, 2);
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `chat-analysis-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showUpdateIndicator('Data exported successfully');
+            }
+            
+        // Clear Chat Data
+        function clearChatData() {
+            if (confirm('Clear all conversation analysis data? This cannot be undone.')) {
+                databaseState.chatInteractions = [];
+                localStorage.removeItem('chatInteractions');
+                renderChatAnalysis();
+                updateStats();
+                showUpdateIndicator('All conversation data cleared');
+            }
+        }
+
+        // Export All Data
+        function exportAllData() {
+            const allData = {
+                knowledgeBase: databaseState.knowledgeBase,
+                chatInteractions: databaseState.chatInteractions,
+                systemLogs: databaseState.systemLogs,
+                stats: databaseState.stats,
+                exportedAt: new Date().toISOString()
+            };
+            const data = JSON.stringify(allData, null, 2);
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `database-export-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showUpdateIndicator('Complete database exported');
+        }
+
+        // Refresh All Data
+        function refreshAllData() {
+            loadFromStorage();
+            loadChatInteractions();
+            renderKnowledgeBase();
+            renderSystemLogs();
+            renderChatAnalysis();
+            updateStats();
+            updateCharts();
+            showUpdateIndicator('All data refreshed');
+        }
+
+        // Reset Database
+        function showResetConfirm() {
+            showAdminModal('Reset Database', `
+                <p style="color: rgba(255,255,255,0.8); margin-bottom: 24px;">
+                    Are you sure you want to reset the entire database? This will delete all stored data including:
+                </p>
+                <ul style="color: rgba(255,255,255,0.7); margin-bottom: 24px; padding-left: 24px;">
+                    <li>Knowledge Base</li>
+                    <li>Conversation Analysis</li>
+                    <li>System Logs</li>
+                    <li>All Statistics</li>
+                </ul>
+                <p style="color: var(--neon-pink); font-weight: 700; margin-bottom: 24px;">
+                    THIS ACTION CANNOT BE UNDONE!
+                </p>
+                <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                    <button onclick="closeAdminModal()" class="action-btn">Cancel</button>
+                    <button onclick="resetDatabase()" class="action-btn danger">RESET DATABASE</button>
+                </div>
+            `);
+        }
+
+        function resetDatabase() {
+            localStorage.removeItem('neuralDatabase');
+            localStorage.removeItem('chatInteractions');
+            location.reload();
+                }
+
+        // Show Stats
+        function showStats() {
+            const totalInteractions = databaseState.chatInteractions.length;
+            const questions = databaseState.chatInteractions.filter(i => i.type === 'user').length;
+            const answers = databaseState.chatInteractions.filter(i => i.type === 'assistant').length;
+            const uniqueUsers = new Set(databaseState.chatInteractions.map(i => i.user)).size;
+            
+            showAdminModal('Database Statistics', `
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 24px;">
+                    <div style="background: rgba(0,243,255,0.1); padding: 20px; border-radius: 12px; border: 1px solid var(--neon-cyan);">
+                        <div style="font-size: 2rem; font-weight: 900; color: var(--neon-cyan); font-family: 'Orbitron', monospace;">${totalInteractions}</div>
+                        <div style="color: rgba(255,255,255,0.6); margin-top: 8px;">Total Interactions</div>
+                        </div>
+                    <div style="background: rgba(0,243,255,0.1); padding: 20px; border-radius: 12px; border: 1px solid var(--neon-cyan);">
+                        <div style="font-size: 2rem; font-weight: 900; color: var(--neon-cyan); font-family: 'Orbitron', monospace;">${questions}</div>
+                        <div style="color: rgba(255,255,255,0.6); margin-top: 8px;">Questions Asked</div>
+                        </div>
+                    <div style="background: rgba(0,243,255,0.1); padding: 20px; border-radius: 12px; border: 1px solid var(--neon-cyan);">
+                        <div style="font-size: 2rem; font-weight: 900; color: var(--neon-cyan); font-family: 'Orbitron', monospace;">${answers}</div>
+                        <div style="color: rgba(255,255,255,0.6); margin-top: 8px;">AI Responses</div>
+                            </div>
+                    <div style="background: rgba(0,243,255,0.1); padding: 20px; border-radius: 12px; border: 1px solid var(--neon-cyan);">
+                        <div style="font-size: 2rem; font-weight: 900; color: var(--neon-cyan); font-family: 'Orbitron', monospace;">${uniqueUsers}</div>
+                        <div style="color: rgba(255,255,255,0.6); margin-top: 8px;">Unique Users</div>
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: flex-end;">
+                    <button onclick="closeAdminModal()" class="action-btn primary">Close</button>
+                </div>
+            `);
+        }
+
+        // Admin Modal Functions
+        function showAdminModal(title, content) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalBody').innerHTML = content;
+            document.getElementById('adminModal').style.display = 'flex';
+            }
+
+        function closeAdminModal() {
+            document.getElementById('adminModal').style.display = 'none';
+        }
+
+        // Escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Render System Logs
+        function renderSystemLogs() {
+            const tbody = document.getElementById('logsTableBody');
+            tbody.innerHTML = databaseState.systemLogs.map(log => `
+                <tr>
+                    <td>${log.timestamp}</td>
+                    <td>${log.event}</td>
+                    <td><span class="data-badge success">${log.status}</span></td>
+                    <td>${log.details}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Update Stats
+        function updateStats() {
+            const totalRecords = databaseState.knowledgeBase.length + databaseState.chatInteractions.length;
+            const uniqueUsers = new Set(databaseState.chatInteractions.map(i => i.user)).size || databaseState.stats.sessions;
+            
+            document.getElementById('statTotal').textContent = totalRecords.toLocaleString();
+            document.getElementById('statSessions').textContent = uniqueUsers;
+            document.getElementById('statIntegrity').textContent = databaseState.stats.integrity + '%';
+            document.getElementById('statSpeed').textContent = databaseState.stats.speed + 's';
+        }
+
+        // Sync Function
+        function syncData() {
+            const syncIndicator = document.getElementById('syncIndicator');
+            const syncText = document.getElementById('syncText');
+            
+            // Quick sync - no delay for real-time feel
+            const wasSyncing = syncIndicator.classList.contains('syncing');
+            
+            if (!wasSyncing) {
+                syncIndicator.classList.add('syncing');
+                syncText.textContent = 'SYNCING...';
+            }
+
+            // Update interconnected data
+            updateInterconnectedData();
+            
+            // Save to storage
+            saveToStorage();
+            
+            // Update charts
+            updateCharts();
+            
+            // Update hero stats
+            updateHeroStats();
+            
+            // Show sync complete
+            setTimeout(() => {
+                syncIndicator.classList.remove('syncing');
+                syncText.textContent = 'SYNCED';
+            }, 300);
+        }
+
+        // Update Interconnected Data
+        function updateInterconnectedData() {
+            // Load latest chat interactions
+            loadChatInteractions();
+            
+            // Update stats based on knowledge base and chat interactions
+            databaseState.stats.total = databaseState.knowledgeBase.length + databaseState.chatInteractions.length;
+            databaseState.stats.sessions = new Set(databaseState.chatInteractions.map(i => i.user)).size || 23;
+            
+            // Update category distribution
+            databaseState.charts.categories = databaseState.knowledgeBase.reduce((acc, item) => {
+                acc[item.category] = (acc[item.category] || 0) + 1;
+                return acc;
+            }, {});
+
+            // Add new log entry
+            databaseState.systemLogs.unshift({
+                timestamp: new Date().toLocaleString(),
+                event: 'Data Synchronization',
+                status: 'SYNCED',
+                details: `All data interconnected and updated | ${databaseState.chatInteractions.length} conversations analyzed`
+            });
+
+            // Keep only last 20 logs
+            if (databaseState.systemLogs.length > 20) {
+                databaseState.systemLogs = databaseState.systemLogs.slice(0, 20);
+            }
+
+            // Update growth data based on chat interactions
+            const lastValue = databaseState.charts.growth.length > 0 
+                ? databaseState.charts.growth[databaseState.charts.growth.length - 1].value 
+                : databaseState.chatInteractions.length;
+            databaseState.charts.growth.push({
+                month: new Date().toLocaleDateString('en-US', { month: 'short' }),
+                value: databaseState.chatInteractions.length || lastValue + Math.random() * 10
+            });
+            if (databaseState.charts.growth.length > 12) {
+                databaseState.charts.growth.shift();
+            }
+
+            // Update activity data based on chat interactions
+            const currentHour = new Date().getHours();
+            const hourInteractions = databaseState.chatInteractions.filter(i => {
+                const hour = new Date(i.timestamp).getHours();
+                return hour === currentHour;
+            }).length;
+            databaseState.charts.activity[currentHour].value = hourInteractions || databaseState.charts.activity[currentHour].value + Math.floor(Math.random() * 5) + 1;
+        }
+
+        // Update Charts
+        function updateCharts() {
+            // Update growth chart
+            if (growthChart) {
+                growthChart.data.labels = databaseState.charts.growth.map(d => d.month);
+                growthChart.data.datasets[0].data = databaseState.charts.growth.map(d => d.value);
+                growthChart.update('none');
+            }
+
+            // Update question type chart
+            if (questionTypeChart) {
+                const questionTypes = databaseState.chatInteractions.reduce((acc, item) => {
+                    const type = item.questionType || 'GENERAL';
+                    acc[type] = (acc[type] || 0) + 1;
+                    return acc;
+                }, {});
+                questionTypeChart.data.labels = Object.keys(questionTypes);
+                questionTypeChart.data.datasets[0].data = Object.values(questionTypes);
+                questionTypeChart.update('none');
+            }
+
+            // Update activity chart
+            if (activityChart) {
+                activityChart.data.datasets[0].data = databaseState.charts.activity.map(d => d.value);
+                activityChart.update('none');
+            }
+
+            // Update response type chart
+            if (responseTypeChart) {
+                const responseTypes = databaseState.chatInteractions.reduce((acc, item) => {
+                    const type = item.responseType || 'PENDING';
+                    acc[type] = (acc[type] || 0) + 1;
+                    return acc;
+                }, {});
+                responseTypeChart.data.labels = Object.keys(responseTypes);
+                responseTypeChart.data.datasets[0].data = Object.values(responseTypes);
+                responseTypeChart.update('none');
+            }
+
+            // Update response time chart
+            if (responseTimeChart) {
+                const responseTimes = databaseState.chatInteractions
+                    .filter(i => i.responseTime)
+                    .map(i => i.responseTime)
+                    .slice(-20);
+                responseTimeChart.data.labels = Array.from({ length: responseTimes.length }, (_, i) => i + 1);
+                responseTimeChart.data.datasets[0].data = responseTimes;
+                responseTimeChart.update('none');
+            }
+
+            // Update user activity chart
+            if (userActivityChart) {
+                const userActivity = databaseState.chatInteractions.reduce((acc, item) => {
+                    const user = item.user || 'anonymous';
+                    acc[user] = (acc[user] || 0) + 1;
+                    return acc;
+                }, {});
+                const sortedUsers = Object.entries(userActivity)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 10);
+                userActivityChart.data.labels = sortedUsers.map(u => u[0]);
+                userActivityChart.data.datasets[0].data = sortedUsers.map(u => u[1]);
+                userActivityChart.update('none');
+            }
+        }
+
+        // Start Auto Sync
+        function startSync() {
+            // Sync every 1 second for real-time updates
+            setInterval(() => {
+                syncData();
+            }, 1000);
+
+            // Initial sync
+            syncData();
+            
+            // Listen for custom events from chat app (real-time sync)
+            window.addEventListener('chatInteractionSaved', (e) => {
+                // Instant update when new chat happens
+                loadChatInteractions();
+                renderChatAnalysis();
+                updateStats();
+                updateCharts();
+                updateHeroStats();
+                syncData();
+                
+                // Show notification
+                const interaction = e.detail;
+                if (interaction.answer) {
+                    showUpdateIndicator(`New AI response analyzed: ${interaction.questionType || 'GENERAL'}`);
+                } else {
+                    showUpdateIndicator(`New question received: ${interaction.questionType || 'GENERAL'}`);
+                }
+            });
+            
+            // Also poll localStorage every 500ms for instant updates
+            let lastInteractionCount = 0;
+            setInterval(() => {
+                const currentCount = databaseState.chatInteractions.length;
+                if (currentCount !== lastInteractionCount) {
+                    lastInteractionCount = currentCount;
+                    loadChatInteractions();
+                    renderChatAnalysis();
+                    updateStats();
+                    updateCharts();
+                    updateHeroStats();
+                }
+            }, 500);
+            
+            // Also listen for storage events (when chat app saves data)
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'chatInteractions') {
+                    loadChatInteractions();
+                    renderChatAnalysis();
+                    updateStats();
+                    updateCharts();
+                    updateHeroStats();
+                    syncData();
+                }
+            });
+        }
+
+        // Update Hero Stats
+        function updateHeroStats() {
+            const totalChats = databaseState.chatInteractions.length;
+            const uniqueUsers = new Set(databaseState.chatInteractions.map(i => i.user)).size;
+            const responseTimes = databaseState.chatInteractions
+                .filter(i => i.responseTime)
+                .map(i => i.responseTime);
+            const avgResponse = responseTimes.length > 0 
+                ? Math.round(responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length)
+                : 0;
+
+            document.getElementById('heroTotalChats').textContent = totalChats.toLocaleString();
+            document.getElementById('heroActiveUsers').textContent = uniqueUsers;
+            document.getElementById('heroAvgResponse').textContent = avgResponse + 'ms';
+        }
+
+        // Show Update Indicator
+        function showUpdateIndicator(message) {
+            const indicator = document.getElementById('updateIndicator');
+            indicator.textContent = message;
+            indicator.classList.add('show');
+            
+            setTimeout(() => {
+                indicator.classList.remove('show');
+            }, 3000);
+        }
+
+        // Password Check
+        function checkPassword() {
+            const input = document.getElementById('passwordInput');
+            const errorMsg = document.getElementById('errorMessage');
+            const passwordScreen = document.getElementById('passwordScreen');
+            const databaseContainer = document.getElementById('databaseContainer');
+            
+            if (input.value === SECRET_PASSWORD) {
+                passwordScreen.style.display = 'none';
+                databaseContainer.classList.add('active');
+                input.value = '';
+                
+                // Initialize database
+                initDatabase();
+            } else {
+                errorMsg.classList.add('show');
+                input.style.borderColor = 'var(--neon-pink)';
+                input.style.boxShadow = '0 0 30px rgba(255, 0, 110, 0.4)';
+                input.value = '';
+                
+                setTimeout(() => {
+                    errorMsg.classList.remove('show');
+                    input.style.borderColor = 'var(--neon-cyan)';
+                    input.style.boxShadow = '0 0 20px rgba(0, 243, 255, 0.2)';
+                }, 3000);
+            }
+        }
+        
+        // Filter Table
+        function filterTable() {
+            const input = document.getElementById('searchBox');
+            const filter = input.value.toUpperCase();
+            const table = document.getElementById('knowledgeTable');
+            const tr = table.getElementsByTagName('tr');
+            
+            for (let i = 1; i < tr.length; i++) {
+                const td = tr[i].getElementsByTagName('td');
+                let found = false;
+                
+                for (let j = 0; j < td.length; j++) {
+                    if (td[j]) {
+                        const txtValue = td[j].textContent || td[j].innerText;
+                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                            found = true;
+                            break;
+            }
+                    }
+                }
+                
+                tr[i].style.display = found ? '' : 'none';
+            }
+        }
+        
+        // Event Listeners
+        document.getElementById('passwordInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkPassword();
+            }
+        });
+
+        // Auto-focus password input
+        window.addEventListener('load', () => {
+            document.getElementById('passwordInput').focus();
+        });
+    </script>
+</body>
+</html>

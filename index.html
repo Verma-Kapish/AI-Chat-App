@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IntelliChat - Infinite Creativity</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Landing specific styles - Ultra Premium */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        .landing-container {
+            height: 100vh;
+            overflow-y: auto;
+            scroll-snap-type: y mandatory;
+        }
+
+        .landing-section {
+            min-height: 100vh;
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
+        }
+
+        /* Typing dots animation */
+        @keyframes typingBounce {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+
+        .typing-dot {
+            width: 10px;
+            height: 10px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            animation: typingBounce 1.4s infinite, gradientShift 3s ease infinite;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s, 0s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s, 0s; }
+
+        /* Testimonials - Enhanced */
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 35px;
+            max-width: 1250px;
+            width: 100%;
+        }
+
+        .testimonial-card {
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(24px);
+            padding: 40px;
+            border-radius: var(--radius-lg);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .testimonial-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: var(--gradient-primary);
+            transform: scaleX(0);
+            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .testimonial-card:hover {
+            transform: translateY(-12px) scale(1.02);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .testimonial-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .testimonial-quote {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            font-size: 3rem;
+            opacity: 0.1;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .testimonial-text {
+            font-size: 1.15rem;
+            line-height: 1.75;
+            color: var(--text-dark);
+            margin-bottom: 28px;
+            font-style: italic;
+            position: relative;
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .testimonial-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 18px;
+            background: var(--gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 800;
+            font-size: 1.2rem;
+            box-shadow: var(--shadow-primary);
+            transition: all 0.4s ease;
+        }
+
+        .testimonial-card:hover .testimonial-avatar {
+            transform: rotate(-8deg) scale(1.1);
+        }
+
+        .testimonial-name {
+            font-weight: 800;
+            font-size: 1.05rem;
+            color: var(--text-dark);
+        }
+
+        .testimonial-role {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            font-weight: 600;
+        }
+
+        .testimonial-stars {
+            display: flex;
+            gap: 4px;
+            margin-top: 6px;
+        }
+
+        .testimonial-stars svg {
+            width: 16px;
+            height: 16px;
+            fill: var(--accent);
+        }
+
+        /* Stats - Enhanced */
+        .stats-row {
+            display: flex;
+            gap: 100px;
+            justify-content: center;
+            margin-top: 90px;
+        }
+
+        .stat-item {
+            text-align: center;
+            position: relative;
+        }
+
+        .stat-item::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 140px;
+            height: 140px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            filter: blur(50px);
+            opacity: 0.15;
+            transform: translate(-50%, -50%);
+            z-index: -1;
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        .stat-number {
+            font-size: 4.5rem;
+            font-weight: 900;
+            background: var(--gradient-aurora);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 8s ease infinite;
+        }
+
+        .stat-label {
+            color: var(--text-light);
+            font-weight: 700;
+            margin-top: 10px;
+            font-size: 1.1rem;
+        }
+
+        /* How it works - Enhanced */
+        .steps-container {
+            display: flex;
+            gap: 50px;
+            max-width: 1100px;
+            width: 100%;
+            position: relative;
+        }
+
+        .steps-container::before {
+            content: '';
+            position: absolute;
+            top: 40px;
+            left: 15%;
+            right: 15%;
+            height: 4px;
+            background: var(--gradient-primary);
+            border-radius: 2px;
+            opacity: 0.2;
+            z-index: 0;
+        }
+
+        .step-card {
+            flex: 1;
+            text-align: center;
+            padding: 50px 35px;
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(24px);
+            border-radius: var(--radius-lg);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            position: relative;
+            box-shadow: var(--shadow);
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 1;
+        }
+
+        .step-card:hover {
+            transform: translateY(-15px) scale(1.02);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .step-number {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 56px;
+            height: 56px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 900;
+            font-size: 1.5rem;
+            box-shadow: var(--shadow-primary);
+            transition: all 0.4s ease;
+        }
+
+        .step-card:hover .step-number {
+            transform: translateX(-50%) scale(1.15) rotate(-8deg);
+        }
+
+        .step-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(236, 72, 153, 0.12) 100%);
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 25px auto 25px;
+            transition: all 0.4s ease;
+        }
+
+        .step-card:hover .step-icon {
+            background: var(--gradient-primary);
+            box-shadow: var(--shadow-primary);
+            transform: scale(1.1);
+        }
+
+        .step-icon svg {
+            width: 36px;
+            height: 36px;
+            fill: var(--primary);
+            transition: all 0.4s ease;
+        }
+
+        .step-card:hover .step-icon svg {
+            fill: white;
+        }
+
+        .step-title {
+            font-size: 1.4rem;
+            font-weight: 800;
+            margin-bottom: 14px;
+            color: var(--text-dark);
+        }
+
+        .step-desc {
+            color: var(--text-light);
+            line-height: 1.7;
+            font-size: 1rem;
+        }
+
+        /* Floating elements for visual interest */
+        .floating-elements {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .float-shape {
+            position: absolute;
+            opacity: 0.15;
+            animation: float 15s ease-in-out infinite;
+        }
+
+        .float-shape-1 {
+            top: 10%;
+            left: 5%;
+            width: 100px;
+            height: 100px;
+            background: var(--gradient-primary);
+            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+            animation-delay: 0s;
+        }
+
+        .float-shape-2 {
+            top: 60%;
+            right: 8%;
+            width: 80px;
+            height: 80px;
+            background: var(--gradient-secondary);
+            border-radius: 63% 37% 54% 46% / 55% 48% 52% 45%;
+            animation-delay: -5s;
+        }
+
+        .float-shape-3 {
+            bottom: 20%;
+            left: 15%;
+            width: 60px;
+            height: 60px;
+            background: var(--gradient-accent);
+            border-radius: 50%;
+            animation-delay: -10s;
+        }
+
+        .float-shape-4 {
+            top: 40%;
+            right: 20%;
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-success);
+            border-radius: 40% 60% 65% 35% / 40% 45% 55% 60%;
+            animation-delay: -7s;
+        }
+
+        /* Trust badges */
+        .trust-badges {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            margin-top: 50px;
+            opacity: 0.6;
+        }
+
+        .trust-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+
+        .trust-badge svg {
+            width: 20px;
+            height: 20px;
+            fill: var(--success);
+        }
+
+        /* CTA Button group */
+        .cta-buttons-stacked {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .or-divider {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        @media (max-width: 1024px) {
+            .testimonials-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .steps-container {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .step-card {
+                flex: 1 1 280px;
+                max-width: 350px;
+            }
+            
+            .steps-container::before {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .testimonials-grid,
+            .steps-container {
+                grid-template-columns: 1fr;
+                flex-direction: column;
+            }
+
+            .stats-row {
+                flex-direction: column;
+                gap: 40px;
+            }
+            
+            .stat-number {
+                font-size: 3.5rem;
+            }
+            
+            .trust-badges {
+                flex-direction: column;
+                align-items: center;
+                gap: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Background -->
+    <div class="ghibli-bg"></div>
+    <div class="ghibli-overlay"></div>
+    
+    <!-- Floating Elements -->
+    <div class="floating-elements">
+        <div class="float-shape float-shape-1"></div>
+        <div class="float-shape float-shape-2"></div>
+        <div class="float-shape float-shape-3"></div>
+        <div class="float-shape float-shape-4"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="landing-nav">
+        <a href="#" class="nav-logo">
+            <div class="nav-logo-icon">
+                <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+            </div>
+            <span class="nav-logo-text">IntelliChat</span>
+        </a>
+        <div class="nav-links">
+            <a href="#features" class="nav-link">Features</a>
+            <a href="#how-it-works" class="nav-link">How it works</a>
+            <a href="#testimonials" class="nav-link">Testimonials</a>
+        </div>
+        <div class="nav-buttons">
+            <a href="intellichat-final.html" class="btn btn-outline">Login</a>
+            <a href="intellichat-final.html" class="btn btn-primary">Get Started</a>
+        </div>
+    </nav>
+
+    <!-- Scroll Container -->
+    <div class="landing-container">
+        
+        <!-- Section 1: Hero -->
+        <section class="landing-section" id="hero">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <span>✨</span> AI-Powered Creativity
+                </div>
+                <h1 class="hero-title">
+                    <span class="gradient-text">Infinite</span> Creativity<br>
+                    at your fingertips
+                </h1>
+                <p class="hero-subtitle">
+                    Experience the next generation of AI conversation. Chat, create stunning images, 
+                    extract text from photos - all in one beautiful, intelligent assistant.
+                </p>
+                <div class="hero-cta">
+                    <a href="intellichat-final.html" class="btn btn-primary btn-lg">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                        Start Creating Free
+                    </a>
+                    <a href="#features" class="btn btn-outline btn-lg">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polygon points="10,8 16,12 10,16" fill="currentColor"/>
+                        </svg>
+                        Explore Features
+                    </a>
+                </div>
+                
+                <div class="trust-badges">
+                    <div class="trust-badge">
+                        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        Secure & Private
+                    </div>
+                    <div class="trust-badge">
+                        <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                        Free to Use
+                    </div>
+                    <div class="trust-badge">
+                        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                        No Credit Card
+                    </div>
+                </div>
+                
+                <div class="stats-row">
+                    <div class="stat-item">
+                        <div class="stat-number">100K+</div>
+                        <div class="stat-label">Active Users</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">5M+</div>
+                        <div class="stat-label">Messages Sent</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">99%</div>
+                        <div class="stat-label">Satisfaction</div>
+                    </div>
+                </div>
+            </div>
+            <div class="scroll-indicator">
+                <span>Scroll to explore</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round">
+                    <path d="M12 5v14M19 12l-7 7-7-7"/>
+                </svg>
+            </div>
+        </section>
+
+        <!-- Section 2: Features -->
+        <section class="landing-section" id="features">
+            <div class="section-header">
+                <div class="section-label">✨ Features</div>
+                <h2 class="section-title">Everything you need, beautifully designed</h2>
+                <p class="section-subtitle">Powerful AI tools wrapped in an intuitive, Ghibli-inspired interface</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+                    </div>
+                    <h3 class="feature-title">Smart AI Chat</h3>
+                    <p class="feature-desc">Powered by Llama 3.3 70B for intelligent, context-aware conversations that truly understand you.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #FA709A 0%, #FEE140 100%); box-shadow: 0 8px 32px rgba(250, 112, 154, 0.4);">
+                        <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                    </div>
+                    <h3 class="feature-title">AI Image Generation</h3>
+                    <p class="feature-desc">Create stunning anime-style images with simple text prompts. Your imagination, our canvas.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #11998E 0%, #38EF7D 100%); box-shadow: 0 8px 32px rgba(16, 185, 129, 0.4);">
+                        <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+                    </div>
+                    <h3 class="feature-title">Voice Input</h3>
+                    <p class="feature-desc">Speak naturally and let AI transcribe your words. Hands-free, hassle-free conversations.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%); box-shadow: 0 8px 32px rgba(102, 126, 234, 0.4);">
+                        <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13z"/></svg>
+                    </div>
+                    <h3 class="feature-title">Image to Text</h3>
+                    <p class="feature-desc">Extract text from any image instantly with powerful OCR. Screenshots, documents, anything.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #22D3EE 0%, #3B82F6 100%); box-shadow: 0 8px 32px rgba(34, 211, 238, 0.4);">
+                        <svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9z"/></svg>
+                    </div>
+                    <h3 class="feature-title">Chat History</h3>
+                    <p class="feature-desc">All your conversations saved and organized. Pick up where you left off, anytime.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #F093FB 0%, #F5576C 100%); box-shadow: 0 8px 32px rgba(240, 147, 251, 0.4);">
+                        <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                    </div>
+                    <h3 class="feature-title">Beautiful Design</h3>
+                    <p class="feature-desc">Ghibli-inspired aesthetics that make every interaction a delightful experience.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: How it Works -->
+        <section class="landing-section" id="how-it-works">
+            <div class="section-header">
+                <div class="section-label">🚀 How it works</div>
+                <h2 class="section-title">Get started in 3 simple steps</h2>
+                <p class="section-subtitle">Start creating in under a minute</p>
+            </div>
+            <div class="steps-container">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <div class="step-icon">
+                        <svg viewBox="0 0 24 24"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                    </div>
+                    <h3 class="step-title">Create Account</h3>
+                    <p class="step-desc">Sign up with just your email. No credit card required, completely free.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <div class="step-icon">
+                        <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+                    </div>
+                    <h3 class="step-title">Start Chatting</h3>
+                    <p class="step-desc">Ask questions, generate images, or extract text. The AI understands it all.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <div class="step-icon">
+                        <svg viewBox="0 0 24 24"><path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>
+                    </div>
+                    <h3 class="step-title">Create Magic</h3>
+                    <p class="step-desc">Your conversations are saved. Come back anytime to continue where you left off.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Testimonials -->
+        <section class="landing-section" id="testimonials">
+            <div class="section-header">
+                <div class="section-label">💬 Testimonials</div>
+                <h2 class="section-title">Loved by creators worldwide</h2>
+                <p class="section-subtitle">See what our users have to say</p>
+            </div>
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <span class="testimonial-quote">"</span>
+                    <p class="testimonial-text">"IntelliChat has completely changed how I brainstorm ideas. The AI understands context so well and the interface is just gorgeous!"</p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">S</div>
+                        <div>
+                            <div class="testimonial-name">Sarah Chen</div>
+                            <div class="testimonial-role">Product Designer</div>
+                            <div class="testimonial-stars">
+                                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <span class="testimonial-quote">"</span>
+                    <p class="testimonial-text">"The image generation feature is incredible. I use it daily for my creative projects. It's like having a personal artist!"</p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar" style="background: linear-gradient(135deg, #FA709A 0%, #FEE140 100%);">M</div>
+                        <div>
+                            <div class="testimonial-name">Marcus Rodriguez</div>
+                            <div class="testimonial-role">Digital Artist</div>
+                            <div class="testimonial-stars">
+                                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <span class="testimonial-quote">"</span>
+                    <p class="testimonial-text">"Beautiful interface, powerful features. Finally an AI chat that doesn't feel robotic! The password reset process is also super smooth."</p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar" style="background: linear-gradient(135deg, #11998E 0%, #38EF7D 100%);">E</div>
+                        <div>
+                            <div class="testimonial-name">Emily Watson</div>
+                            <div class="testimonial-role">Content Creator</div>
+                            <div class="testimonial-stars">
+                                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: CTA -->
+        <section class="landing-section cta-section">
+            <div class="cta-content">
+                <h2 class="cta-title">Ready to unlock infinite creativity?</h2>
+                <p class="cta-subtitle">Join thousands of creators using IntelliChat every day.</p>
+                <div class="cta-buttons-stacked">
+                    <a href="intellichat-final.html" class="btn btn-accent btn-lg">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                        Get Started Now - It's Free!
+                    </a>
+                </div>
+            </div>
+            <footer class="landing-footer">
+                <p>© 2024 IntelliChat. Infinite Creativity. Made with ❤️ and AI</p>
+            </footer>
+        </section>
+
+    </div>
+
+</body>
+</html>
